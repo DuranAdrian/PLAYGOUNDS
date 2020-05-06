@@ -13,8 +13,9 @@ import MobileCoreServices
 class ViewController: UIViewController {
     let mediaContainer = UIView()
     let mediaImageView = UIImageView()
-    let videoPlayer = AVPlayer()
+    var videoPlayer = AVPlayer()
     let videoPlayerQueue = AVQueuePlayer()
+    let videoViewContainer = AVPlayerViewController()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -46,18 +47,19 @@ class ViewController: UIViewController {
         mediaContainer.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(mediaContainer)
         
+        // Set up mediaPlayer
+        videoViewContainer.player = videoPlayer
+        videoViewContainer.view.contentMode = .scaleAspectFill
+        videoViewContainer.view.translatesAutoresizingMaskIntoConstraints = false
+        mediaContainer.addSubview(videoViewContainer.view)
+        
         // Set up ImageView
 //        imageView.frame = UIImageView(frame: view.safeAreaLayoutGuide.layoutFrame)
         mediaImageView.translatesAutoresizingMaskIntoConstraints = false
-//        mediaImageView.layer.borderColor = UIColor.black.cgColor
+        mediaImageView.backgroundColor = UIColor.black
 //        mediaImageView.layer.borderWidth = 1.5
         mediaContainer.addSubview(mediaImageView)
         
-        // Set up mediaPlayer
-        let videoViewContainer = AVPlayerViewController()
-        videoViewContainer.player = videoPlayerQueue
-        videoViewContainer.view.translatesAutoresizingMaskIntoConstraints = false
-        mediaContainer.addSubview(videoViewContainer.view)
         
         
         // Constraints
@@ -94,10 +96,10 @@ class ViewController: UIViewController {
             }
             let mediaPicker = UIImagePickerController()
             mediaPicker.delegate = self
-            mediaPicker.allowsEditing = false
+            mediaPicker.allowsEditing = true
             mediaPicker.mediaTypes = ["public.movie"]
             mediaPicker.videoQuality = .typeHigh
-            mediaPicker.videoMaximumDuration = 5.0
+            mediaPicker.videoMaximumDuration = TimeInterval(5.0)
             self.present(mediaPicker, animated: true, completion: nil)
             
         })
@@ -132,11 +134,14 @@ extension ViewController: UIImagePickerControllerDelegate, UINavigationControlle
         case "public.movie":
              print("Selected Movie")
              if let url = info[UIImagePickerController.InfoKey.mediaURL] as? URL {
-                videoPlayerQueue.removeAllItems()
-                let playerItem = AVPlayerItem.init(url: url)
-                videoPlayerQueue.insert(playerItem, after: nil)
-                videoPlayerQueue.play()
-                 
+//                videoPlayerQueue.removeAllItems()
+//                let playerItem = AVPlayerItem.init(url: url)
+//                videoPlayerQueue.insert(playerItem, after: nil)
+//                videoPlayerQueue.play()
+                mediaImageView.isHidden = true
+                videoViewContainer.view.isHidden = false
+                 videoPlayer = AVPlayer(url: url)
+                videoViewContainer.player = videoPlayer
              }
             break
         case "public.image":
@@ -146,6 +151,8 @@ extension ViewController: UIImagePickerControllerDelegate, UINavigationControlle
                 mediaImageView.contentMode = .scaleAspectFill
                 mediaImageView.clipsToBounds = true
                 mediaImageView.layer.backgroundColor = UIColor.white.cgColor
+                mediaImageView.isHidden = false
+                videoViewContainer.view.isHidden = true
             }
             break
         default:
